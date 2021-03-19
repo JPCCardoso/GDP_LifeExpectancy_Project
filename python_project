@@ -1,0 +1,136 @@
+# import the necessary libraries
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# import data, and show all rows
+world_data = pd.read_csv('all_data.csv')
+pd.set_option('max_rows', None)
+
+
+# Return all columns names: Country, Year, Life expectancy at birth (years), GDP
+print(world_data.columns.tolist())
+
+# rename 3rd column to << Life expectancy (birth) >>
+world_data.rename(columns = {'Life expectancy at birth (years)':
+'Life expectancy (birth)'}, inplace = True)
+
+# retrieve countries in data: 6
+# Chile, China, Gernamy, Mexico, United States of America, Zimbabwe
+print(world_data.Country.unique())
+
+# Store key elements for future analysis
+country = world_data.Country.unique()
+years = world_data.Year.unique()
+
+# QUESTIONS TO ANSWER
+# Q1 - Overall, what is the trajectory of the GDP throught the world? And what about Life Expectancy at birth?
+# Q2 - What is the trajectory of each country GDP and Life Expectancy at birth, between 2000 and 2015?
+# Q3 - Which country has the highest GDP in 2015? And which country has the highest Life Expectancy at birth in 2015?
+
+
+# Q1 - Overall GDP + Life expectancy
+# 1st graph - GDP Evolution
+plt.figure(figsize = [15, 5])
+# to create two graphs in the same row
+g1 = plt.subplot(1, 2, 1)
+sns.barplot(data = world_data, x = 'Year', y = 'GDP')
+plt.xlabel('Year')
+plt.ylabel('GDP in Trillion US Dollars')
+plt.xticks(rotation = -65)
+# retrieves the 1st and last year available automatically
+plt.title('GDP Evolution (' + str(years[0]) + ' - ' +
+str(years[-1]) + ')')
+
+# 2nd Graph - Life expectancy
+g2 = plt.subplot(1, 2, 2)
+sns.barplot(data = world_data, x = 'Year', y = 'Life expectancy (birth)')
+plt.xlabel('Year')
+plt.ylabel('Life Expectancy at birth in Years')
+plt.xticks(rotation = -65)
+plt.title('Evolution of Life Expectancy at birth (' + str(years[0]) + ' - ' +
+str(years[-1]) + ')')
+# shorten Y-AXIS to be easier to convey the information available
+plt.axis([-1, 16, 50, 85])
+
+plt.show()
+plt.clf()
+
+
+# Q2 - GDP + Life expectancy by Country
+# 3rd Graph - GDP Evolution
+plt.figure(figsize = ([15, 10]))
+# to create graphs in the same column, different rows
+g3 = plt.subplot(2, 1, 1)
+sns.barplot(data = world_data, x = 'Country', y = 'GDP', hue = 'Year')
+# create title to this specific graph
+g3.set_title('GDP Evolution by Country (Trillion US Dollars)')
+plt.ylabel('GDP (Trillion US Dollars)')
+#adjust the space between graphs
+plt.subplots_adjust(hspace = 0.5)
+# adjusts the legend size
+plt.legend(fontsize = 'x-small')
+
+# 4th graph - Life expectancy
+g4 = plt.subplot(2, 1, 2)
+sns.barplot(data = world_data, x = 'Country', y = 'Life expectancy (birth)',
+hue = 'Year')
+# adjusts Y-Axis to better presentation
+plt.axis([-0.5, 5.5, 40, 85])
+g4.set_title('Life Expectancy Evolution by Country')
+# remove legend from bottom graph
+g4.get_legend().remove()
+# creates grid lines along the Y-Axis
+g4.yaxis.grid()
+
+plt.show()
+plt.clf()
+
+
+# Q2 EXTRA - new graphs to better understand previously presented data
+
+# makes a list of the values in the column COUNTRY from DataFrame
+countries = list(country)
+# Range definition for future x-axis ticks
+x = range(len(years))
+
+# FOR LOOP to plot automatically a pair of graphs (GDP + Life expectancy) by country
+for name in countries:
+    plt.figure(figsize = ([15, 5]))
+
+    #plot GDP graph
+    h1 = world_data.GDP[world_data.Country == name]
+    g51 = plt.subplot(1, 2, 1)
+    plt.bar(x, h1)
+    plt.title(name + '\'s GDP Evolution')
+    g51.set_xticks(x)
+    g51.set_xticklabels(years)
+    plt.xticks(rotation = -65)
+    plt.xlabel('Year')
+    plt.ylabel('GDP in Trillion US Dollars')
+
+    # Plot Life expectancy graph
+    h2 = world_data['Life expectancy (birth)'][world_data.Country == name]
+    g52 = plt.subplot(1, 2, 2)
+    plt.bar(x, h2)
+    plt.title(name + '\'s Life Expectancy at Birth')
+    g52.set_xticks(x)
+    g52.set_xticklabels(years)
+    plt.xticks(rotation = -65)
+    plt.xlabel('Year')
+    plt.ylabel('Age')
+
+    plt.show()
+    plt.clf()
+
+# Q3 EXTRA - Pearson correlation + graph to see if there is correlation between variables GDP + Life expectancy
+# Scatter plot to see visually possible correlation
+plt.scatter(x = world_data['Life expectancy (birth)'], y = world_data.GDP)
+plt.show()
+
+# new library and calculation of correlation
+from scipy.stats import pearsonr
+
+corr_rel, pr = pearsonr(world_data.GDP, world_data['Life expectancy (birth)'])
+print(corr_rel)
